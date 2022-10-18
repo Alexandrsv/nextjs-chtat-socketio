@@ -5,12 +5,14 @@ import { IMessage } from "../types/socket-events";
 import { useUser } from "../hooks/use-user";
 import NewMessage from "../components/NewMessage";
 import { SocketContext } from "../context/socket-context";
+import { useAudio } from "../hooks/use-audio";
 
 const Home: NextPage = () => {
   const [messages, setMessages] = useState<IMessage[]>([]);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const { username } = useUser();
   const { socket } = useContext(SocketContext);
+  const { playOnNewMessage } = useAudio({});
   console.log("messages", { messages, username });
 
   useEffect(() => {
@@ -32,6 +34,7 @@ const Home: NextPage = () => {
         console.log("message", message);
         if (message?.id) {
           setMessages((messages) => [...messages, message]);
+          void playOnNewMessage();
         }
       });
 
@@ -42,19 +45,19 @@ const Home: NextPage = () => {
       });
     }
     if (socket) return () => socket.disconnect();
-  }, [socket]);
+  }, [playOnNewMessage, socket]);
 
   return (
     <div
       className={
-        "h-screen overflow-hidden bg-blue-50 flex p-5 pt-10 justify-stretch"
+        "h-screen overflow-hidden bg-blue-50 flex px-5 pt-10 justify-stretch"
       }
     >
       <div
         className={
           "grow mx-auto max-w-3xl max-h-[900px] border border-1 shadow shadow-purple-600 bg-white"
         }
-        style={{ height: "calc(100vh - 40px)" }}
+        style={{ height: "calc(100vh - 80px)" }}
       >
         <div className={"flex flex-col border border-1 shadow h-full"}>
           <div
@@ -77,7 +80,7 @@ const Home: NextPage = () => {
               </div>
             ))}
           </div>
-          <div className={"pt-9"}>
+          <div className={"pt-9 "}>
             <NewMessage />
           </div>
         </div>
