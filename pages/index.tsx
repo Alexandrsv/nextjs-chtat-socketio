@@ -1,41 +1,18 @@
 import type { NextPage } from "next";
 
-import { useContext, useEffect, useRef, useState } from "react";
-import { IMessage } from "../types/socket-events";
-import { useUser } from "../hooks/use-user";
+import { useContext, useEffect } from "react";
 import NewMessage from "../components/NewMessage";
 import { SocketContext } from "../context/socket-context";
-import { useAudio } from "../hooks/use-audio";
+import Messages from "../components/Messages";
 
 const Home: NextPage = () => {
-  const [messages, setMessages] = useState<IMessage[]>([]);
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const { username } = useUser();
   const { socket } = useContext(SocketContext);
-  const { playOnNewMessage } = useAudio({});
-  console.log("messages", { messages, username });
-
-  useEffect(() => {
-    // scroll to bottom
-    if (messagesContainerRef.current) {
-      messagesContainerRef.current.scrollTop =
-        messagesContainerRef.current.scrollHeight;
-    }
-  }, [messages]);
 
   useEffect((): any => {
     if (socket) {
       console.log("socket", socket);
       socket.on("connect", () => {
         console.log("SOCKET CONNECTED!", socket.id);
-      });
-
-      socket.on("message", (message: IMessage) => {
-        console.log("message", message);
-        if (message?.id) {
-          setMessages((messages) => [...messages, message]);
-          void playOnNewMessage();
-        }
       });
 
       socket.emit("message", { text: "Hello from client" });
@@ -45,7 +22,7 @@ const Home: NextPage = () => {
       });
     }
     if (socket) return () => socket.disconnect();
-  }, [playOnNewMessage, socket]);
+  }, [socket]);
 
   return (
     <div
@@ -60,26 +37,7 @@ const Home: NextPage = () => {
         style={{ height: "calc(100vh - 80px)" }}
       >
         <div className={"flex flex-col border border-1 shadow h-full"}>
-          <div
-            ref={messagesContainerRef}
-            className={"h-[100%] overflow-y-auto border border-b-1"}
-          >
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={"mx-3 my-5 px-3 pt-5 pb-2  border border-1 relative"}
-              >
-                {message.text}
-                <div
-                  className={
-                    "absolute bg-white -top-3 px-2 left-3 border border-1 shadow"
-                  }
-                >
-                  {message.username}
-                </div>
-              </div>
-            ))}
-          </div>
+          <Messages />
           <div className={"pt-9 "}>
             <NewMessage />
           </div>

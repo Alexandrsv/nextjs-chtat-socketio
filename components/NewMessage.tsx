@@ -58,7 +58,9 @@ const NewMessage = () => {
         className={"border px-3 border-b-1 w-full outline-amber-300 h-8"}
       />
       <button
-        className={"border border-b-1 px-3 bg-purple-600 text-white"}
+        className={
+          "border border-b-1 px-3 bg-purple-600 text-white disabled:opacity-75"
+        }
         onClick={onSend}
         disabled={!isConnected}
       >
