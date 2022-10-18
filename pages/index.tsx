@@ -72,7 +72,7 @@ const Home: NextPage = () => {
                     "absolute bg-white -top-3 px-2 left-3 border border-1 shadow"
                   }
                 >
-                  {username}
+                  {message.username}
                 </div>
               </div>
             ))}
