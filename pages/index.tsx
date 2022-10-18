@@ -45,9 +45,15 @@ const Home: NextPage = () => {
   }, [socket]);
 
   return (
-    <div className={"h-screen overflow-hidden bg-blue-50"}>
+    <div
+      className={
+        "h-screen overflow-hidden bg-blue-50 flex p-5 pt-10 justify-stretch"
+      }
+    >
       <div
-        className={"border border-1 shadow shadow-purple-600 m-5 bg-white"}
+        className={
+          "grow mx-auto max-w-3xl max-h-[900px] border border-1 shadow shadow-purple-600 bg-white"
+        }
         style={{ height: "calc(100vh - 40px)" }}
       >
         <div className={"flex flex-col border border-1 shadow h-full"}>
