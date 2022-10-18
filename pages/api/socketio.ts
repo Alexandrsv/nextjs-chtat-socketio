@@ -2,6 +2,7 @@ import { NextApiRequest } from "next";
 import { Server as ServerIO } from "socket.io";
 import { Server as NetServer } from "http";
 import { NextApiResponseServerIO } from "../../types/next";
+import { IMessage } from "../../types/socket-events";
 
 export const config = {
   api: {
@@ -9,7 +10,10 @@ export const config = {
   },
 };
 
-export default async (req: NextApiRequest, res: NextApiResponseServerIO) => {
+export default async function socketio(
+  req: NextApiRequest,
+  res: NextApiResponseServerIO
+) {
   if (!res.socket.server.io) {
     console.log("New Socket.io server...");
 
@@ -20,21 +24,18 @@ export default async (req: NextApiRequest, res: NextApiResponseServerIO) => {
 
     res.socket.server.io = io;
     io.on("connection", (socket) => {
-      socket.on("message", (message) => {
+      socket.on("message", (message: IMessage) => {
         console.log("Message received", message);
 
         // Send message to all connected clients
-        // io.emit("message", message);
-        socket.emit("message", message);
+        io.emit("message", message);
+
+        // socket.emit("message", message);
       });
       socket.onAny((event, ...args) => {
-        console.log(`got "${event}" with args`, args);
+        // console.log(`got "${event}" with args`, args);
       });
-      console.log("3214", socket.id);
-    });
-    io.on("message", (socket) => {
-      console.log("message", socket);
     });
   }
   res.end();
-};
+}

@@ -1,20 +1,17 @@
 import type { NextPage } from "next";
 
-import { useEffect, useRef, useState } from "react";
-import { io, Socket } from "socket.io-client";
-import {
-  ClientToServerEvents,
-  IMessage,
-  ServerToClientEvents,
-} from "../types/socket-events";
-import { v1 as uuid } from "uuid";
-
-let socket: Socket<any, any>;
+import { useContext, useEffect, useRef, useState } from "react";
+import { IMessage } from "../types/socket-events";
+import { useUser } from "../hooks/use-user";
+import NewMessage from "../components/NewMessage";
+import { SocketContext } from "../context/socket-context";
 
 const Home: NextPage = () => {
   const [messages, setMessages] = useState<IMessage[]>([]);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-  console.log("messages", { messages });
+  const { username } = useUser();
+  const { socket } = useContext(SocketContext);
+  console.log("messages", { messages, username });
 
   useEffect(() => {
     // scroll to bottom
@@ -25,36 +22,27 @@ const Home: NextPage = () => {
   }, [messages]);
 
   useEffect((): any => {
-    socket = io(process.env.BASE_URL || "/", {
-      path: "/api/socketio",
-    });
+    if (socket) {
+      console.log("socket", socket);
+      socket.on("connect", () => {
+        console.log("SOCKET CONNECTED!", socket.id);
+      });
 
-    socket.on("connect", () => {
-      console.log("SOCKET CONNECTED!", socket.id);
-    });
+      socket.on("message", (message: IMessage) => {
+        console.log("message", message);
+        if (message?.id) {
+          setMessages((messages) => [...messages, message]);
+        }
+      });
 
-    socket.on("message", (message: IMessage) => {
-      console.log("message", message);
-      if (message?.id) {
-        setMessages((messages) => [...messages, message]);
-      }
-    });
+      socket.emit("message", { text: "Hello from client" });
 
-    socket.emit("message", { text: "Hello from client" });
-
-    socket.onAny((event, ...args) => {
-      console.log(`got ${event} with args`, args);
-    });
-
+      socket.onAny((event, ...args) => {
+        console.log(`got ${event} with args`, args);
+      });
+    }
     if (socket) return () => socket.disconnect();
-  }, []);
-
-  const onSendRandomMessage = () => {
-    socket.emit("message", {
-      id: uuid(),
-      text: "Random " + Math.random().toString(36),
-    });
-  };
+  }, [socket]);
 
   return (
     <div className={"h-screen overflow-hidden bg-blue-50"}>
@@ -67,30 +55,24 @@ const Home: NextPage = () => {
             ref={messagesContainerRef}
             className={"h-[100%] overflow-y-auto border border-b-1"}
           >
-            {messages.map((message, index) => (
-              <div key={message.id} className={"m-3 p-3 border border-1"}>
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={"mx-3 my-5 px-3 pt-5 pb-2  border border-1 relative"}
+              >
                 {message.text}
+                <div
+                  className={
+                    "absolute bg-white -top-3 px-2 left-3 border border-1 shadow"
+                  }
+                >
+                  {username}
+                </div>
               </div>
             ))}
           </div>
           <div className={"pt-9"}>
-            <div className={"flex border border-1 m-3 mt-auto p-3 space-x-4"}>
-              <input
-                type="text"
-                className={"border border-b-1 w-full outline-amber-300 h-8"}
-              />
-              <button
-                className={"border border-b-1 px-3 bg-purple-600 text-white"}
-              >
-                Отправить
-              </button>
-              <button
-                className={"border border-b-1 px-3 bg-purple-600 text-white"}
-                onClick={onSendRandomMessage}
-              >
-                Рандом
-              </button>
-            </div>
+            <NewMessage />
           </div>
         </div>
       </div>
