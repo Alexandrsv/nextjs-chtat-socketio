@@ -8,6 +8,12 @@ const NewMessage = () => {
   const { username } = useUser();
   const inputRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
+
   const onSend = useCallback(() => {
     if (isConnected && socket && inputRef.current?.value) {
       socket.emit("message", {
@@ -17,9 +23,6 @@ const NewMessage = () => {
       });
       inputRef.current.value = "";
     }
-    if (inputRef.current && !inputRef.current?.value) {
-      inputRef.current.focus();
-    }
   }, [isConnected, socket, username]);
 
   useEffect(() => {
@@ -27,6 +30,9 @@ const NewMessage = () => {
     const listener = (event: KeyboardEvent) => {
       if (event.key === "Enter" && inputRef.current?.value) {
         onSend();
+        if (inputRef.current && !inputRef.current?.value) {
+          inputRef.current.focus();
+        }
       }
     };
     if (currentInput) {
@@ -59,7 +65,7 @@ const NewMessage = () => {
       />
       <button
         className={
-          "border border-b-1 px-3 bg-purple-600 text-white disabled:opacity-75"
+          "border border-b-1 px-3 bg-purple-600 text-white disabled:bg-gray-300 disabled:text-gray-500"
         }
         onClick={onSend}
         disabled={!isConnected}
