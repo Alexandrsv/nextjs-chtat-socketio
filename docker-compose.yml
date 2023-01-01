@@ -8,5 +8,26 @@ services:
     ports:
       - "3220:3000"
 
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik-default"
+
+      - "traefik.http.middlewares.secure-redirect.redirectscheme.scheme=https"
+#      - "traefik.http.middlewares.secure-redirect.redirectscheme.permanent=true"
+      - "traefik.http.routers.chat-web.middlewares=secure-redirect@docker"
+      - "traefik.http.routers.chat-web.rule=Host(`chat.zbc.su`)"
+      - "traefik.http.routers.chat-web.entrypoints=web"
+
+      - "traefik.http.routers.chat-websecure.entrypoints=websecure"
+      - "traefik.http.routers.chat-websecure.rule=Host(`chat.zbc.su`)"
+      - "traefik.http.routers.chat-websecure.tls=true"
+      - "traefik.http.routers.chat-websecure.tls.certresolver=production"
+      - "traefik.port=3220"
+
+    networks:
+      - traefik-default
 
 
+networks:
+  traefik-default:
+    external: true
